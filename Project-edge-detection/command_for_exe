@@ -1,1 +1,12 @@
+# To make .exe file
 pyinstaller --onefile main.py
+
+# To pass argument to exe file only if contains similar code to
+import sys
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        input_argument = sys.argv[1]
+        print(f"Input args: {input_argument}")
+    else:
+        print("No input args!")
