@@ -1,0 +1,46 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+def edge_detection(image_path, image_name, shouldSkeletonize):
+    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+
+    _, binary_image = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+    kernel = np.ones((3, 3), np.uint8)
+
+    gradient = cv2.morphologyEx(binary_image, cv2.MORPH_GRADIENT, kernel)
+
+    if shouldSkeletonize:
+        skeleton = cv2.ximgproc.thinning(gradient)
+    else:
+        skeleton = gradient
+
+    contours, _ = cv2.findContours(skeleton, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    edge_lengths = [len(contour) for contour in contours]
+
+    plt.figure(figsize=(12, 6))
+
+    plt.subplot(2, 2, 1)
+    plt.imshow(image, cmap='gray')
+    plt.title(f'Obraz Oryginalny - {image_name}')
+
+    plt.subplot(2, 2, 2)
+    plt.imshow(skeleton, cmap='gray')
+    plt.title(f'Detekcja Krawędzi - {image_name}')
+
+    plt.show()
+
+    if image.shape[:2] == skeleton.shape:
+        original_extension = image_path.split('.')[-1].lower()
+        saved_image_path = f'saved_images/{image_name}_edges.{original_extension}'
+        cv2.imwrite(saved_image_path, skeleton)
+        print(f'Original Image Shape (Resolution) ({image_name}): {image.shape}')
+        print(f'Edges Image Shape (Resolution) ({image_name}): {skeleton.shape}')
+        print("Image successfully saved to saved_images/ folder.")
+    else:
+        print("Error: Resolutions of the original and processed images do not match.")
+        return None, None
+
+    return skeleton, edge_lengths
